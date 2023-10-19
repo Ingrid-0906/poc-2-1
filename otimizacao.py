@@ -312,7 +312,15 @@ def performe_chart(df):
     fig = go.Figure()
     
     for col in df.columns:
-        fig.add_trace(go.Line(x=df.index, y=df[col], name=col))
+        if col == portfolio_optimizer.indicator:
+            fig.add_trace(go.Line(x=df.index, 
+                                  y=df[col], 
+                                  name=col,
+                                  line = dict(color='royalblue', 
+                                              width=4, 
+                                              dash='dash')))
+        else:
+            fig.add_trace(go.Line(x=df.index, y=df[col], name=col))
         
     fig.layout.update(title_text='Carteira vs. Benchmark', xaxis_rangeslider_visible=True)
     st.plotly_chart(fig, use_container_width=True)
@@ -492,17 +500,17 @@ if __name__ == "__main__":
         st.markdown(f"<h1 style='color: blue;'>{round(start_data['OptimalReturn']*100, 2)}%</h1>", unsafe_allow_html=True)
         st.markdown(f"<h5 style='color: gray;'>{round(start_data['OptimalVolatility']*100, 2)}% volátil</h5>", unsafe_allow_html=True)
 
-        # Performance: Benchmark
-        performance_lines = portfolio_optimizer.run_performance()
-        performe_chart(performance_lines)
+        # 3d plot - Carteira Otimizada
+        data_3d = portfolio_optimizer.run_plot_3D()
+        run_3d_chart(data_3d)
         
         # Perfil de cada ticker
         data_profile = portfolio_optimizer.run_profile_ativos()
         profile_metrica(data_profile)
         
-        # 3d plot - Carteira Otimizada
-        data_3d = portfolio_optimizer.run_plot_3D()
-        run_3d_chart(data_3d)
+        # Performance: Benchmark
+        performance_lines = portfolio_optimizer.run_performance()
+        performe_chart(performance_lines)
         
         # best weights
         best_weight(data_profile)
