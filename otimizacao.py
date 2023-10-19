@@ -309,18 +309,26 @@ class PortfolioOptimization:
 
 # Funçoes para plotar os charts
 def performe_chart(df):
-    fig = go.Figure()
+    benchmark = portfolio_optimizer.indicator
     
+    bench = str()
+    for i in range(len(benchmark)):
+        bench = str(benchmark[i][:benchmark[i].find('.SA')])    
+           
+    fig = go.Figure()
     for col in df.columns:
-        if col == portfolio_optimizer.indicator:
-            fig.add_trace(go.Line(x=df.index, 
+        if col == bench:
+            fig.add_trace(go.Scatter(x=df.index, 
                                   y=df[col], 
                                   name=col,
-                                  line = dict(color='royalblue', 
-                                              width=4, 
-                                              dash='dash')))
+                                  line = dict(color='white', 
+                                              width=5, 
+                                              dash='dot')))
         else:
-            fig.add_trace(go.Line(x=df.index, y=df[col], name=col))
+            fig.add_trace(go.Scatter(x=df.index, 
+                                     y=df[col], 
+                                     name=col, 
+                                     line = dict(width=1)))
         
     fig.layout.update(title_text='Carteira vs. Benchmark', xaxis_rangeslider_visible=True)
     st.plotly_chart(fig, use_container_width=True)
@@ -331,11 +339,11 @@ def profile_metrica(data):
     div_1, div_2, div_3, div_4, div_5 = st.columns(5)
     
     try:
-        div_1.metric(data['ticker'][0], f"{round(data['return'][0]*100,2)}%", f"-{round(data['risk'][0]*100,2)}% risco")
-        div_2.metric(data['ticker'][1], f"{round(data['return'][1]*100,2)}%", f"-{round(data['risk'][1]*100,2)}% risco")
-        div_3.metric(data['ticker'][2], f"{round(data['return'][2]*100,2)}%", f"-{round(data['risk'][2]*100,2)}% risco")
-        div_4.metric(data['ticker'][3], f"{round(data['return'][3]*100,2)}%", f"-{round(data['risk'][3]*100,2)}% risco")
-        div_5.metric(data['ticker'][4], f"{round(data['return'][4]*100,2)}%", f"-{round(data['risk'][4]*100,2)}% risco")
+        div_1.metric(data['ticker'][0], f"{round(data['return'][0]*100,2)}%", f"{round(data['risk'][0]*100,2)}% risco", delta_color="off")
+        div_2.metric(data['ticker'][1], f"{round(data['return'][1]*100,2)}%", f"{round(data['risk'][1]*100,2)}% risco", delta_color="off")
+        div_3.metric(data['ticker'][2], f"{round(data['return'][2]*100,2)}%", f"{round(data['risk'][2]*100,2)}% risco", delta_color="off")
+        div_4.metric(data['ticker'][3], f"{round(data['return'][3]*100,2)}%", f"{round(data['risk'][3]*100,2)}% risco", delta_color="off")
+        div_5.metric(data['ticker'][4], f"{round(data['return'][4]*100,2)}%", f"{round(data['risk'][4]*100,2)}% risco", delta_color="off")
     except IndexError:
         pass
     
@@ -362,8 +370,7 @@ def run_3d_chart(data_3d):
     ))
 
     # tight layout
-    fig.update_layout(title_text='Outras Carteiras', 
-                      scene=dict(xaxis_title='Risco',
+    fig.update_layout(scene=dict(xaxis_title='Risco',
                                  yaxis_title='Retorno',
                                  zaxis_title='índice Sharpe'),
                       margin=dict(l=0, r=0, b=0))
@@ -494,28 +501,32 @@ if __name__ == "__main__":
         start_data = portfolio_optimizer.run_start_data()
             
         st.markdown("<hr/>",unsafe_allow_html=True)
-    
-        # Resultados: Retorno e Risco
-        st.markdown("#### Sua Carteira Otimizada é")
-        st.markdown(f"<h1 style='color: blue;'>{round(start_data['OptimalReturn']*100, 2)}%</h1>", unsafe_allow_html=True)
-        st.markdown(f"<h5 style='color: gray;'>{round(start_data['OptimalVolatility']*100, 2)}% volátil</h5>", unsafe_allow_html=True)
-
-        # 3d plot - Carteira Otimizada
+        
+        
+        data_profile = portfolio_optimizer.run_profile_ativos()
+        performance_lines = portfolio_optimizer.run_performance()
         data_3d = portfolio_optimizer.run_plot_3D()
+        
+        col1, col2= st.columns([1, 3])
+        with col1:
+            # Resultados: Retorno e Risco
+            st.markdown("#### Sua Carteira Otimizada é")
+            st.markdown(f"<h1 style='color: white;'>{round(start_data['OptimalReturn']*100, 2)}%</h1>", unsafe_allow_html=True)
+            st.markdown(f"<h5 style='color: gray;'>{round(start_data['OptimalVolatility']*100, 2)}% volátil</h5>", unsafe_allow_html=True)
+        with col2:
+            # best weights
+            best_weight(data_profile)
+        
+        # 3d plot - Carteira Otimizada
         run_3d_chart(data_3d)
         
         # Perfil de cada ticker
-        data_profile = portfolio_optimizer.run_profile_ativos()
         profile_metrica(data_profile)
         
         # Performance: Benchmark
-        performance_lines = portfolio_optimizer.run_performance()
         performe_chart(performance_lines)
-        
-        # best weights
-        best_weight(data_profile)
-        
-        st.markdown("##### Outras Carteiras")
+  
+        st.markdown("##### Carteira Disponível")
         st.markdown("<h6>Nota. Filtrado por menor risco</h6>", unsafe_allow_html=True)
         # Tabela com outros possiveis portifolios
         p_vol, p_ret, p_sharpe = data_3d['x'], data_3d['y'], data_3d['z']
