@@ -198,7 +198,9 @@ class PortfolioOptimization:
             novo_nome.append(elemento)
         
         profile['ticker'] = novo_nome
-        dt_profile = pd.DataFrame(data=profile)
+        dt_profile = pd.DataFrame.from_dict(profile, orient='index')
+        dt_profile = dt_profile.transpose()
+        
         return dt_profile
         
 
