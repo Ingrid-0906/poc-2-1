@@ -199,6 +199,7 @@ class PortfolioOptimization:
         
         profile['ticker'] = novo_nome
         dt_profile = pd.DataFrame(data=profile)
+        print(profile)
         return dt_profile
         
 
