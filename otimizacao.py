@@ -176,7 +176,7 @@ class PortfolioOptimization:
                    'industry': [], 
                    'ticker': [], 
                    'peso_wallet': [], 
-                   'peso_new': self.peso_otimo, 
+                   'peso_new': [], 
                    'return': e_r, 
                    'risk': vol}
         
@@ -196,8 +196,9 @@ class PortfolioOptimization:
         for i in range(len(self.tickers)):
             elemento = str(self.tickers[i][:self.tickers[i].find('.SA')])
             novo_nome.append(elemento)
-        
+            
         profile['ticker'] = novo_nome
+        profile['peso_new'] = [i for i in self.peso_otimo]
         dt_profile = pd.DataFrame.from_dict(profile, orient='index')
         dt_profile = dt_profile.transpose()
         return dt_profile
